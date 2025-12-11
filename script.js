@@ -12,306 +12,182 @@ const sampleData = [
     { counter: 1010, longitude: 46.6971, latitude: 24.7368, polygon: "حي العليا" }
 ];
 
-// خريطة Leaflet
-let map;
-let markers = [];
+let currentData = [];
 
-// تهيئة الخريطة
-function initMap() {
-    map = L.map('map').setView([24.7136, 46.6728], 12);
+// عناصر DOM
+const excelFileInput = document.getElementById('excel-file');
+const kmzFileInput = document.getElementById('kmz-file');
+const excelInfo = document.getElementById('excel-info');
+const kmzInfo = document.getElementById('kmz-info');
+const messageDiv = document.getElementById('message');
+const loadingDiv = document.getElementById('loading');
+const resultsBody = document.getElementById('results-body');
+const totalPointsEl = document.getElementById('total-points');
+const linkedPointsEl = document.getElementById('linked-points');
+const unlinkedPointsEl = document.getElementById('unlinked-points');
+
+// استمع لتغييرات الملفات
+excelFileInput.addEventListener('change', handleFileSelect);
+kmzFileInput.addEventListener('change', handleFileSelect);
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    const infoDiv = event.target.id === 'excel-file' ? excelInfo : kmzInfo;
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
-    
-    // إضافة مضللات وهمية
-    const polygons = [
-        { name: "حي النخيل", coords: [[24.71, 46.67], [24.72, 46.67], [24.72, 46.69], [24.71, 46.69]] },
-        { name: "حي العليا", coords: [[24.72, 46.67], [24.73, 46.67], [24.73, 46.69], [24.72, 46.69]] },
-        { name: "حي المروج", coords: [[24.71, 46.69], [24.72, 46.69], [24.72, 46.71], [24.71, 46.71]] },
-        { name: "حي الورود", coords: [[24.72, 46.69], [24.73, 46.69], [24.73, 46.71], [24.72, 46.71]] }
-    ];
-    
-    polygons.forEach(poly => {
-        L.polygon(poly.coords, {
-            color: '#3498db',
-            fillColor: '#3498db',
-            fillOpacity: 0.1,
-            weight: 2
-        }).addTo(map).bindPopup(`<b>${poly.name}</b>`);
-    });
+    if (file) {
+        infoDiv.textContent = `✅ ${file.name} (${formatFileSize(file.size)})`;
+        infoDiv.style.color = '#27ae60';
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' بايت';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' كيلوبايت';
+    return (bytes / 1048576).toFixed(1) + ' ميجابايت';
 }
 
 // تحميل البيانات النموذجية
 function loadSampleData() {
-    showLoading("جاري تحميل البيانات النموذجية...");
+    showMessage('جاري تحميل البيانات النموذجية...', 'info');
     
-    // محاكاة عملية التحميل
     setTimeout(() => {
-        updateResultsTable(sampleData);
-        updateMapMarkers(sampleData);
-        updateStats(sampleData);
-        hideLoading();
-        showProcessInfo("✅ تم تحميل البيانات النموذجية بنجاح", "success");
+        // محاكاة قراءة ملف Excel
+        const excelFile = new File([""], "sample_data.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         
-        // عرض قسم النتائج
-        document.getElementById('results-section').style.display = 'block';
-        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
-    }, 1500);
+        // تحديث معلومات الملفات
+        excelInfo.textContent = '✅ sample_data.xlsx (45.2 KB)';
+        excelInfo.style.color = '#27ae60';
+        kmzInfo.textContent = '✅ polygons.kmz (120.5 KB)';
+        kmzInfo.style.color = '#27ae60';
+        
+        // تحديث البيانات
+        currentData = sampleData;
+        updateResultsTable(currentData);
+        updateStats(currentData);
+        
+        showMessage('✅ تم تحميل البيانات النموذجية بنجاح', 'success');
+    }, 1000);
+}
+
+// معالجة البيانات
+function processData() {
+    const excelFile = excelFileInput.files[0];
+    
+    if (!excelFile && excelInfo.textContent === 'لم يتم رفع أي ملف') {
+        showMessage('❌ يرجى رفع ملف Excel أو استخدام البيانات النموذجية', 'error');
+        return;
+    }
+    
+    showLoading(true);
+    showMessage('جاري معالجة البيانات...', 'info');
+    
+    // محاكاة عملية المعالجة
+    setTimeout(() => {
+        let processedData;
+        
+        if (currentData.length > 0) {
+            // إذا كانت هناك بيانات حالية، أضف بعض العشوائية
+            processedData = currentData.map(item => ({
+                ...item,
+                polygon: Math.random() > 0.15 ? item.polygon : 'غير مرتبط'
+            }));
+        } else {
+            // استخدام البيانات النموذجية
+            processedData = sampleData.map(item => ({
+                ...item,
+                polygon: Math.random() > 0.15 ? item.polygon : 'غير مرتبط'
+            }));
+        }
+        
+        currentData = processedData;
+        updateResultsTable(processedData);
+        updateStats(processedData);
+        
+        showLoading(false);
+        showMessage('✅ تمت معالجة البيانات بنجاح', 'success');
+        
+        // التمرير إلى قسم النتائج
+        document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth' });
+    }, 2000);
 }
 
 // تحديث جدول النتائج
 function updateResultsTable(data) {
-    const tbody = document.getElementById('results-body');
-    tbody.innerHTML = '';
+    resultsBody.innerHTML = '';
     
     data.forEach(item => {
         const row = document.createElement('tr');
-        
         row.innerHTML = `
             <td>${item.counter}</td>
             <td>${item.longitude.toFixed(4)}</td>
             <td>${item.latitude.toFixed(4)}</td>
             <td>${item.polygon}</td>
         `;
-        
-        tbody.appendChild(row);
+        resultsBody.appendChild(row);
     });
-}
-
-// تحديث العلامات على الخريطة
-function updateMapMarkers(data) {
-    // إزالة العلامات القديمة
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    
-    // إضافة علامات جديدة
-    data.forEach(item => {
-        const marker = L.marker([item.latitude, item.longitude])
-            .addTo(map)
-            .bindPopup(`<b>عداد ${item.counter}</b><br>${item.polygon}`);
-        
-        markers.push(marker);
-    });
-    
-    // تكبير الخريطة لتناسب جميع العلامات
-    if (markers.length > 0) {
-        const group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds());
-    }
 }
 
 // تحديث الإحصائيات
 function updateStats(data) {
     const totalPoints = data.length;
-    const linkedPoints = data.filter(item => item.polygon !== "غير مرتبط").length;
+    const linkedPoints = data.filter(item => item.polygon !== 'غير مرتبط').length;
     const unlinkedPoints = totalPoints - linkedPoints;
     
-    document.getElementById('total-points').textContent = totalPoints;
-    document.getElementById('linked-points').textContent = linkedPoints;
-    document.getElementById('unlinked-points').textContent = unlinkedPoints;
-}
-
-// معالجة البيانات
-function processData() {
-    const excelFile = document.getElementById('excel-file').files[0];
-    const kmzFile = document.getElementById('kmz-file').files[0];
-    
-    // التحقق من رفع الملفات
-    if (!excelFile && !document.getElementById('excel-info').textContent) {
-        showProcessInfo("❌ يرجى رفع ملف Excel أو استخدام البيانات النموذجية", "error");
-        return;
-    }
-    
-    showLoading("جاري معالجة البيانات...");
-    
-    // محاكاة معالجة البيانات
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += 10;
-        document.getElementById('progress').style.width = `${progress}%`;
-        
-        if (progress >= 100) {
-            clearInterval(progressInterval);
-            
-            // استخدام البيانات النموذجية كناتج للمعالجة
-            setTimeout(() => {
-                const processedData = sampleData.map(item => ({
-                    ...item,
-                    polygon: Math.random() > 0.1 ? item.polygon : "غير مرتبط"
-                }));
-                
-                updateResultsTable(processedData);
-                updateMapMarkers(processedData);
-                updateStats(processedData);
-                hideLoading();
-                showProcessInfo("✅ تمت معالجة البيانات بنجاح", "success");
-                
-                // عرض قسم النتائج
-                document.getElementById('results-section').style.display = 'block';
-                document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
-            }, 500);
-        }
-    }, 300);
+    totalPointsEl.textContent = totalPoints;
+    linkedPointsEl.textContent = linkedPoints;
+    unlinkedPointsEl.textContent = unlinkedPoints;
 }
 
 // تحميل النتائج
 function downloadResults() {
-    showLoading("جاري إنشاء ملف Excel...");
+    if (currentData.length === 0) {
+        showMessage('❌ لا توجد بيانات للتحميل', 'error');
+        return;
+    }
+    
+    showMessage('جاري إنشاء ملف Excel...', 'info');
     
     setTimeout(() => {
-        hideLoading();
+        // إنشاء محتوى CSV
+        let csvContent = "رقم العداد,الطول,العرض,اسم المضلع\n";
+        currentData.forEach(item => {
+            csvContent += `${item.counter},${item.longitude},${item.latitude},${item.polygon}\n`;
+        });
         
-        // محاكاة تحميل الملف
+        // إنشاء رابط التحميل
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        link.href = '#';
-        link.download = 'النتائج_المعالجة.xlsx';
-        link.textContent = 'انقر لحفظ الملف';
+        const url = URL.createObjectURL(blob);
         
-        showProcessInfo("✅ تم إنشاء ملف Excel. " + link.outerHTML, "success");
-    }, 2000);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'النتائج_المعالجة.csv');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showMessage('✅ تم تنزيل الملف بنجاح', 'success');
+    }, 1500);
 }
 
-// إظهار نموذج التحميل
-function showLoading(message = "جاري المعالجة...") {
-    document.getElementById('loading-text').textContent = message;
-    document.getElementById('loading-modal').style.display = 'flex';
-    document.getElementById('progress').style.width = '0%';
+// دوال مساعدة
+function showLoading(show) {
+    loadingDiv.style.display = show ? 'block' : 'none';
+    document.getElementById('results-container').style.opacity = show ? '0.5' : '1';
 }
 
-// إخفاء نموذج التحميل
-function hideLoading() {
-    document.getElementById('loading-modal').style.display = 'none';
+function showMessage(text, type) {
+    messageDiv.textContent = text;
+    messageDiv.className = `message ${type}`;
+    
+    // إخفاء الرسالة بعد 5 ثواني
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 5000);
 }
 
-// عرض رسالة عملية
-function showProcessInfo(message, type = "info") {
-    const processInfo = document.getElementById('process-info');
-    processInfo.innerHTML = message;
-    processInfo.className = `process-info ${type}`;
-}
-
-// التعامل مع رفع الملفات
-document.addEventListener('DOMContentLoaded', function() {
-    // تهيئة الخريطة
-    initMap();
-    
-    // عرض جزء من البيانات النموذجية في الجدول
-    updateResultsTable(sampleData.slice(0, 3));
-    updateStats(sampleData);
-    
-    // إعداد مستمعي الأحداث للملفات
-    const excelFileInput = document.getElementById('excel-file');
-    const kmzFileInput = document.getElementById('kmz-file');
-    
-    excelFileInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            const file = e.target.files[0];
-            document.getElementById('excel-info').textContent = `تم رفع: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-        }
-    });
-    
-    kmzFileInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            const file = e.target.files[0];
-            document.getElementById('kmz-info').textContent = `تم رفع: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-        }
-    });
-    
-    // إعداد التنقل المتنقل
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    
-    menuToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-    });
-    
-    // إغلاق القائمة عند النقر على رابط
-    document.querySelectorAll('.nav-menu a').forEach(link => {
-        link.addEventListener('click', function() {
-            navMenu.classList.remove('active');
-        });
-    });
-    
-    // إضافة تأثيرات عند التمرير
-    window.addEventListener('scroll', function() {
-        const navbar = document.querySelector('.navbar');
-        if (window.scrollY > 100) {
-            navbar.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-        } else {
-            navbar.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-        }
-        
-        // تفعيل الروابط النشطة
-        const sections = document.querySelectorAll('section');
-        const navLinks = document.querySelectorAll('.nav-menu a');
-        
-        let current = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.clientHeight;
-            if (window.scrollY >= sectionTop - 200) {
-                current = section.getAttribute('id');
-            }
-        });
-        
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${current}`) {
-                link.classList.add('active');
-            }
-        });
-    });
-    
-    // سحب وإفلات الملفات
-    const uploadBoxes = document.querySelectorAll('.upload-box');
-    
-    uploadBoxes.forEach(box => {
-        box.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#3498db';
-            this.style.backgroundColor = '#f0f8ff';
-        });
-        
-        box.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#ddd';
-            this.style.backgroundColor = 'white';
-        });
-        
-        box.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.style.borderColor = '#3498db';
-            this.style.backgroundColor = 'white';
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const file = files[0];
-                const fileInfo = this.querySelector('.file-info');
-                
-                if (this.id === 'excel-upload') {
-                    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-                        fileInfo.textContent = `تم رفع: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                        // محاكاة تعيين الملف للإدخال
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        excelFileInput.files = dataTransfer.files;
-                    } else {
-                        fileInfo.textContent = '❌ يرجى رفع ملف Excel فقط';
-                    }
-                } else if (this.id === 'kmz-upload') {
-                    if (file.name.endsWith('.kmz')) {
-                        fileInfo.textContent = `تم رفع: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                        // محاكاة تعيين الملف للإدخال
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        kmzFileInput.files = dataTransfer.files;
-                    } else {
-                        fileInfo.textContent = '❌ يرجى رفع ملف KMZ فقط';
-                    }
-                }
-            }
-        });
-    });
-});
+// تحميل البيانات النموذجية عند فتح الصفحة
+window.onload = function() {
+    loadSampleData();
+};
