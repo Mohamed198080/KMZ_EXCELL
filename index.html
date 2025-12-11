@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام معالجة البيانات الجغرافية</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- شريط التنقل -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>نظام البيانات الجغرافية</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="active">الرئيسية</a></li>
+                <li><a href="#features">المميزات</a></li>
+                <li><a href="#how-to-use">كيفية الاستخدام</a></li>
+                <li><a href="#demo">تجربة النظام</a></li>
+                <li><a href="#about">عن النظام</a></li>
+            </ul>
+            <button class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- القسم الرئيسي -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>نظام معالجة البيانات الجغرافية المتقدم</h1>
+            <p>ربط نقاط الإحداثيات بالمضللات الجغرافية بشكل تلقائي باستخدام الذكاء الاصطناعي</p>
+            <div class="hero-buttons">
+                <a href="#demo" class="btn primary-btn">تجربة النظام</a>
+                <a href="#how-to-use" class="btn secondary-btn">كيفية الاستخدام</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1194&q=80" alt="خريطة جغرافية">
+        </div>
+    </section>
+
+    <!-- قسم المميزات -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">مميزات النظام</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-excel"></i>
+                    </div>
+                    <h3>قراءة ملفات Excel</h3>
+                    <p>يدعم النظام قراءة ملفات Excel التي تحتوي على إحداثيات الطول والعرض وأرقام العدادات.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-draw-polygon"></i>
+                    </div>
+                    <h3>معالجة المضللات الجغرافية</h3>
+                    <p>يقوم باستخراج المضللات من ملفات KMZ/KML وربطها تلقائياً بنقاط الإحداثيات.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h3>ربط تلقائي</h3>
+                    <p>يربط كل نقطة إحداثيات مع المضلع الجغرافي الذي تقع ضمنه بشكل تلقائي ودقيق.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3>تصدير النتائج</h3>
+                    <p>يحفظ النتائج في ملف Excel جديد يحتوي على أسماء المضللات المرتبطة بكل عداد.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- كيفية الاستخدام -->
+    <section id="how-to-use" class="how-to-use">
+        <div class="container">
+            <h2 class="section-title">كيفية استخدام النظام</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>تحضير ملف Excel</h3>
+                        <p>تأكد من أن ملف Excel يحتوي على الأعمدة التالية: Counter_Number, Longitude, Latitude</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>تحضير ملف KMZ</h3>
+                        <p>تأكد من أن ملف KMZ يحتوي على المضللات الجغرافية بأسماء واضحة</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>معالجة البيانات</h3>
+                        <p>قم برفع الملفات للنظام وسيقوم بربط كل عداد بالمضلع الجغرافي المناسب</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>تحميل النتائج</h3>
+                        <p>قم بتحميل ملف Excel الناتج الذي يحتوي على أسماء المضللات المرتبطة</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- تجربة النظام -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <h2 class="section-title">تجربة النظام</h2>
+            <p class="section-subtitle">يمكنك تجربة النظام باستخدام بيانات نموذجية أو رفع ملفاتك الخاصة</p>
+            
+            <div class="demo-container">
+                <!-- محاكاة رفع الملفات -->
+                <div class="upload-section">
+                    <div class="upload-box" id="excel-upload">
+                        <i class="fas fa-file-excel"></i>
+                        <h3>رفع ملف Excel</h3>
+                        <p>انسخ ملف Excel أو اسحب وأفلت هنا</p>
+                        <input type="file" id="excel-file" accept=".xlsx, .xls" hidden>
+                        <button class="upload-btn" onclick="document.getElementById('excel-file').click()">
+                            اختيار ملف
+                        </button>
+                        <div class="file-info" id="excel-info"></div>
+                    </div>
+                    
+                    <div class="upload-box" id="kmz-upload">
+                        <i class="fas fa-map"></i>
+                        <h3>رفع ملف KMZ</h3>
+                        <p>انسخ ملف KMZ أو اسحب وأفلت هنا</p>
+                        <input type="file" id="kmz-file" accept=".kmz" hidden>
+                        <button class="upload-btn" onclick="document.getElementById('kmz-file').click()">
+                            اختيار ملف
+                        </button>
+                        <div class="file-info" id="kmz-info"></div>
+                    </div>
+                </div>
+                
+                <!-- زر المعالجة -->
+                <div class="process-section">
+                    <button class="process-btn" id="process-btn" onclick="processData()">
+                        <i class="fas fa-cogs"></i>
+                        بدء معالجة البيانات
+                    </button>
+                    <div class="process-info" id="process-info"></div>
+                </div>
+                
+                <!-- عرض النتائج -->
+                <div class="results-section" id="results-section">
+                    <h3>نتائج المعالجة</h3>
+                    <div class="results-container">
+                        <div class="table-container">
+                            <table id="results-table">
+                                <thead>
+                                    <tr>
+                                        <th>رقم العداد</th>
+                                        <th>الطول</th>
+                                        <th>العرض</th>
+                                        <th>اسم المضلع</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="results-body">
+                                    <!-- سيتم ملء الجدول بالبيانات النموذجية -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="map-container">
+                            <div id="map"></div>
+                            <p class="map-info">الخريطة توضح توزيع العدادات والمضللات الجغرافية</p>
+                        </div>
+                    </div>
+                    
+                    <div class="download-section">
+                        <button class="download-btn" id="download-btn" onclick="downloadResults()">
+                            <i class="fas fa-download"></i>
+                            تحميل النتائج كملف Excel
+                        </button>
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="stat-value" id="total-points">0</span>
+                                <span class="stat-label">إجمالي النقاط</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="linked-points">0</span>
+                                <span class="stat-label">النقاط المرتبطة</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="unlinked-points">0</span>
+                                <span class="stat-label">النقاط غير المرتبطة</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- استخدام بيانات نموذجية -->
+                <div class="sample-data-section">
+                    <h3>بيانات نموذجية للاختبار</h3>
+                    <p>يمكنك استخدام البيانات النموذجية لتجربة النظام دون الحاجة لرفع ملفات</p>
+                    <button class="sample-btn" onclick="loadSampleData()">
+                        <i class="fas fa-database"></i>
+                        استخدام بيانات نموذجية
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- معلومات عن النظام -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">عن النظام</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>نظام معالجة البيانات الجغرافية</h3>
+                    <p>تم تطوير هذا النظام لحل مشكلة ربط نقاط الإحداثيات (العدادات) مع المضللات الجغرافية (المناطق الإدارية، الأحياء، إلخ) بشكل تلقائي.</p>
+                    <p>يستخدم النظام مكتبات متخصصة في معالجة البيانات الجغرافية مثل GeoPandas وShapely لضمان دقة الربط المكاني.</p>
+                    <div class="tech-stack">
+                        <h4>التقنيات المستخدمة:</h4>
+                        <div class="tech-icons">
+                            <span class="tech-icon"><i class="fab fa-python"></i> Python</span>
+                            <span class="tech-icon"><i class="fas fa-chart-bar"></i> Pandas</span>
+                            <span class="tech-icon"><i class="fas fa-globe-americas"></i> GeoPandas</span>
+                            <span class="tech-icon"><i class="fas fa-shapes"></i> Shapely</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="تحليل البيانات">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- تذييل الصفحة -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>نظام البيانات الجغرافية</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#home">الرئيسية</a>
+                    <a href="#features">المميزات</a>
+                    <a href="#how-to-use">كيفية الاستخدام</a>
+                    <a href="#demo">تجربة النظام</a>
+                </div>
+                <div class="footer-copyright">
+                    <p>© 2023 نظام معالجة البيانات الجغرافية. جميع الحقوق محفوظة.</p>
+                    <p>تم التطوير باستخدام تقنيات مفتوحة المصدر</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- نموذج تحميل -->
+    <div class="loading-modal" id="loading-modal">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>جاري معالجة البيانات</h3>
+            <p id="loading-text">يرجى الانتظار...</p>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
