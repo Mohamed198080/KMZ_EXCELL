@@ -7,8 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <!-- مكتبات لمعالجة الملفات الجغرافية -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://unpkg.com/@tmcw/togeojson@4.5.0/dist/togeojson.umd.js"></script>
     <style>
-        /* سيتم وضع CSS كاملاً هنا لتجنب مشاكل الروابط */
+        /* CSS يبقى كما هو */
         * {
             margin: 0;
             padding: 0;
@@ -575,6 +578,7 @@
         
         let processedData = [];
         let excelData = [];
+        let polygonsData = [];
 
         // استمع لتغييرات الملفات
         document.getElementById('excel-file').addEventListener('change', function(e) {
@@ -617,6 +621,11 @@
             // إذا كان ملف Excel، قراءته وعرض بياناته
             if (type === 'excel') {
                 readExcelFile(file);
+            }
+            
+            // إذا كان ملف KMZ، قراءته واستخراج المضللات
+            if (type === 'kmz') {
+                readKMZFile(file);
             }
             
             showMessage(`تم رفع ${type === 'excel' ? 'ملف Excel' : 'ملف KMZ'} بنجاح`, 'success');
@@ -662,6 +671,9 @@
                 excelData = [];
                 clearResultsTable();
             }
+            if (type === 'kmz') {
+                polygonsData = [];
+            }
         }
 
         // قراءة ملف Excel باستخدام SheetJS
@@ -700,6 +712,75 @@
             };
             
             reader.readAsArrayBuffer(file);
+        }
+
+        // قراءة ملف KMZ واستخراج المضللات
+        async function readKMZFile(file) {
+            try {
+                showLoading('جاري قراءة ملف KMZ...');
+                
+                // استخراج KML من KMZ
+                const zip = new JSZip();
+                const zipData = await zip.loadAsync(file);
+                
+                // البحث عن ملف KML داخل KMZ
+                let kmlFile = null;
+                for (const filename in zipData.files) {
+                    if (filename.endsWith('.kml')) {
+                        kmlFile = zipData.files[filename];
+                        break;
+                    }
+                }
+                
+                if (!kmlFile) {
+                    throw new Error('لم يتم العثور على ملف KML داخل ملف KMZ');
+                }
+                
+                // قراءة محتوى KML
+                const kmlText = await kmlFile.async('text');
+                
+                // تحليل KML
+                const parser = new DOMParser();
+                const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
+                
+                // تحويل KML إلى GeoJSON
+                const geojson = toGeoJSON.kml(kmlDoc);
+                
+                // استخراج المضللات من GeoJSON
+                polygonsData = extractPolygonsFromGeoJSON(geojson);
+                
+                hideLoading();
+                showMessage(`تم استخراج ${polygonsData.length} مضلع من ملف KMZ`, 'success');
+                
+            } catch (error) {
+                console.error('خطأ في قراءة ملف KMZ:', error);
+                showMessage('خطأ في قراءة ملف KMZ. تأكد من صحة الملف', 'error');
+                hideLoading();
+            }
+        }
+
+        // استخراج المضللات من GeoJSON
+        function extractPolygonsFromGeoJSON(geojson) {
+            const polygons = [];
+            
+            if (!geojson || !geojson.features) {
+                return polygons;
+            }
+            
+            geojson.features.forEach(feature => {
+                if (feature.geometry && feature.geometry.type === 'Polygon') {
+                    const polygonName = feature.properties?.name || 
+                                      feature.properties?.Name || 
+                                      `مضلع ${polygons.length + 1}`;
+                    
+                    polygons.push({
+                        name: polygonName,
+                        coordinates: feature.geometry.coordinates[0] // الحصول على الإحداثيات الخارجية فقط
+                    });
+                }
+            });
+            
+            return polygons;
         }
 
         // استخراج البيانات من Excel
@@ -814,29 +895,42 @@
             setTimeout(() => {
                 // بيانات نموذجية
                 const sampleExcelData = [
-                    { counter: 1001, longitude: 46.6728, latitude: 24.7136 },
-                    { counter: 1002, longitude: 46.6752, latitude: 24.7158 },
-                    { counter: 1003, longitude: 46.6789, latitude: 24.7182 },
-                    { counter: 1004, longitude: 46.6815, latitude: 24.7210 },
-                    { counter: 1005, longitude: 46.6842, latitude: 24.7235 },
-                    { counter: 1006, longitude: 46.6867, latitude: 24.7261 },
-                    { counter: 1007, longitude: 46.6893, latitude: 24.7289 },
-                    { counter: 1008, longitude: 46.6920, latitude: 24.7315 },
-                    { counter: 1009, longitude: 46.6945, latitude: 24.7342 },
-                    { counter: 1010, longitude: 46.6971, latitude: 24.7368 }
+                    { counter: 84995769, longitude: 41.597424, latitude: 27.422577 },
+                    { counter: 82384325, longitude: 42.935330, latitude: 28.256882 },
+                    { counter: 65445382, longitude: 41.675612, latitude: 27.522625 },
+                    { counter: 65382907, longitude: 41.749193, latitude: 27.549664 },
+                    { counter: 71037601, longitude: 42.933397, latitude: 28.260661 },
+                    { counter: 61211589, longitude: 41.643443, latitude: 27.527097 },
+                    { counter: 63952433, longitude: 41.652373, latitude: 27.468442 },
+                    { counter: 10227804, longitude: 41.731682, latitude: 27.567220 }
                 ];
                 
                 // حفظ البيانات
                 excelData = sampleExcelData;
                 
-                // إنشاء ملف وهمي للعرض
-                uploadedFiles.excel = new File([""], "sample_data.xlsx", { 
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-                });
-                
-                uploadedFiles.kmz = new File([""], "sample_polygons.kmz", { 
-                    type: "application/vnd.google-earth.kmz" 
-                });
+                // إنشاء مضللات نموذجية
+                polygonsData = [
+                    {
+                        name: "مضلع الرياض",
+                        coordinates: [
+                            [41.5, 27.4],
+                            [41.8, 27.4],
+                            [41.8, 27.6],
+                            [41.5, 27.6],
+                            [41.5, 27.4]
+                        ]
+                    },
+                    {
+                        name: "مضلع المنطقة الشمالية",
+                        coordinates: [
+                            [42.8, 28.2],
+                            [43.0, 28.2],
+                            [43.0, 28.3],
+                            [42.8, 28.3],
+                            [42.8, 28.2]
+                        ]
+                    }
+                ];
                 
                 // عرض الملفات في القائمة
                 const fileList = document.getElementById('file-list');
@@ -877,8 +971,8 @@
                 return;
             }
             
-            if (!uploadedFiles.kmz) {
-                showMessage('⚠️ لم يتم رفع ملف KMZ، سيتم استخدام مضللات افتراضية', 'warning');
+            if (polygonsData.length === 0) {
+                showMessage('⚠️ لم يتم تحميل مضللات جغرافية، سيتم استخدام مضللات افتراضية', 'info');
             }
             
             showLoading('جاري معالجة البيانات...');
@@ -892,7 +986,7 @@
                 if (progress >= 100) {
                     clearInterval(progressInterval);
                     
-                    // محاكاة معالجة البيانات
+                    // معالجة البيانات
                     setTimeout(() => {
                         processDataSimulation();
                         hideLoading();
@@ -904,32 +998,26 @@
 
         // محاكاة معالجة البيانات
         function processDataSimulation() {
-            // مضللات افتراضية (في التطبيق الحقيقي، ستأتي من ملف KMZ)
-            const polygons = [
-                { name: "حي النخيل", bounds: { minLon: 46.67, maxLon: 46.68, minLat: 24.71, maxLat: 24.72 } },
-                { name: "حي العليا", bounds: { minLon: 46.68, maxLon: 46.69, minLat: 24.72, maxLat: 24.73 } },
-                { name: "حي المروج", bounds: { minLon: 46.69, maxLon: 46.70, minLat: 24.73, maxLat: 24.74 } },
-                { name: "حي الورود", bounds: { minLon: 46.70, maxLon: 46.71, minLat: 24.74, maxLat: 24.75 } }
-            ];
-            
             // معالجة البيانات
             processedData = excelData.map(item => {
-                // محاكاة تحديد المضلع الجغرافي
                 let polygonName = "غير مرتبط";
                 
-                for (const polygon of polygons) {
-                    if (item.longitude >= polygon.bounds.minLon && 
-                        item.longitude <= polygon.bounds.maxLon &&
-                        item.latitude >= polygon.bounds.minLat && 
-                        item.latitude <= polygon.bounds.maxLat) {
+                // التحقق مما إذا كانت النقطة داخل أي مضلع
+                for (const polygon of polygonsData) {
+                    if (pointInPolygon(item.longitude, item.latitude, polygon.coordinates)) {
                         polygonName = polygon.name;
                         break;
                     }
                 }
                 
-                // إضافة بعض العشوائية لمحاكاة عدم الربط
-                if (Math.random() < 0.1) {
-                    polygonName = "غير مرتبط";
+                // إذا لم توجد مضللات، استخدم منطق الربط البسيط
+                if (polygonsData.length === 0) {
+                    // منطق افتراضي للربط بناءً على الموقع
+                    if (item.longitude > 41 && item.longitude < 42 && item.latitude > 27 && item.latitude < 28) {
+                        polygonName = "المنطقة الوسطى";
+                    } else if (item.longitude > 42 && item.longitude < 43 && item.latitude > 28 && item.latitude < 29) {
+                        polygonName = "المنطقة الشمالية";
+                    }
                 }
                 
                 return {
@@ -945,6 +1033,24 @@
             document.getElementById('download-btn').disabled = false;
             
             showMessage('✅ تمت معالجة البيانات بنجاح', 'success');
+        }
+
+        // دالة للتحقق مما إذا كانت النقطة داخل المضلع
+        function pointInPolygon(longitude, latitude, polygon) {
+            // خوارزمية Ray Casting
+            let inside = false;
+            
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const xi = polygon[i][0], yi = polygon[i][1];
+                const xj = polygon[j][0], yj = polygon[j][1];
+                
+                const intersect = ((yi > latitude) !== (yj > latitude)) &&
+                    (longitude < (xj - xi) * (latitude - yi) / (yj - yi) + xi);
+                
+                if (intersect) inside = !inside;
+            }
+            
+            return inside;
         }
 
         // عرض النتائج
