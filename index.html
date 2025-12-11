@@ -7,11 +7,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <!-- مكتبات لمعالجة الملفات الجغرافية -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/@tmcw/togeojson@4.5.0/dist/togeojson.umd.js"></script>
     <style>
-        /* CSS يبقى كما هو */
         * {
             margin: 0;
             padding: 0;
@@ -435,10 +433,9 @@
 </head>
 <body>
     <div class="container">
-        <!-- شريط العنوان -->
         <header class="header">
             <h1><i class="fas fa-map-marked-alt"></i> نظام معالجة البيانات الجغرافية</h1>
-            <p>ربط نقاط الإحداثيات بالمضللات الجغرافية بشكل تلقائي</p>
+            <p>حـــــــــــــــــــــــائل</p>
         </header>
 
         <div class="main-content">
@@ -463,7 +460,6 @@
                 </div>
                 
                 <div class="file-list" id="file-list">
-                    <!-- سيتم عرض الملفات المرفوعة هنا -->
                 </div>
                 
                 <div class="action-buttons">
@@ -483,7 +479,6 @@
                 </div>
             </div>
 
-            <!-- قسم النتائج -->
             <div class="results-section">
                 <h2><i class="fas fa-chart-bar"></i> نتائج المعالجة</h2>
                 
@@ -513,7 +508,6 @@
                             </tr>
                         </thead>
                         <tbody id="results-body">
-                            <!-- سيتم ملء الجدول هنا -->
                         </tbody>
                     </table>
                 </div>
@@ -526,7 +520,6 @@
             </div>
         </div>
 
-        <!-- قسم التعليمات -->
         <div class="instructions">
             <h2><i class="fas fa-info-circle"></i> التعليمات</h2>
             <div class="steps">
@@ -553,14 +546,12 @@
             </div>
         </div>
 
-        <!-- التذييل -->
         <footer class="footer">
-            <p>© 2024 نظام معالجة البيانات الجغرافية | تم التطوير باستخدام HTML, CSS, JavaScript</p>
+            <p>0581217473 | تم التطوير باستخدام HTML, CSS, JavaScript</p>
             <p><i class="fab fa-github"></i> كود مفتوح المصدر</p>
         </footer>
     </div>
 
-    <!-- نافذة التحميل -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-content">
             <div class="spinner"></div>
@@ -570,7 +561,6 @@
     </div>
 
     <script>
-        // المتغيرات العامة
         let uploadedFiles = {
             excel: null,
             kmz: null
@@ -580,7 +570,6 @@
         let excelData = [];
         let polygonsData = [];
 
-        // استمع لتغييرات الملفات
         document.getElementById('excel-file').addEventListener('change', function(e) {
             handleFileUpload(e.target.files[0], 'excel');
         });
@@ -589,11 +578,9 @@
             handleFileUpload(e.target.files[0], 'kmz');
         });
 
-        // دالة معالجة رفع الملفات
         function handleFileUpload(file, type) {
             if (!file) return;
             
-            // التحقق من نوع الملف
             const validExtensions = {
                 excel: ['.xlsx', '.xls'],
                 kmz: ['.kmz']
@@ -606,24 +593,19 @@
                 return;
             }
             
-            // التحقق من حجم الملف (حد أقصى 10MB)
             if (file.size > 10 * 1024 * 1024) {
                 showMessage('حجم الملف كبير جداً. الحد الأقصى 10MB', 'error');
                 return;
             }
             
-            // حفظ الملف
             uploadedFiles[type] = file;
             
-            // عرض الملف في القائمة
             displayFileInList(file, type);
             
-            // إذا كان ملف Excel، قراءته وعرض بياناته
             if (type === 'excel') {
                 readExcelFile(file);
             }
             
-            // إذا كان ملف KMZ، قراءته واستخراج المضللات
             if (type === 'kmz') {
                 readKMZFile(file);
             }
@@ -631,7 +613,6 @@
             showMessage(`تم رفع ${type === 'excel' ? 'ملف Excel' : 'ملف KMZ'} بنجاح`, 'success');
         }
 
-        // عرض الملف في القائمة
         function displayFileInList(file, type) {
             const fileList = document.getElementById('file-list');
             const fileId = `${type}-${Date.now()}`;
@@ -658,7 +639,6 @@
             fileList.appendChild(fileItem);
         }
 
-        // إزالة ملف من القائمة
         function removeFile(fileId, type) {
             const fileElement = document.getElementById(fileId);
             if (fileElement) {
@@ -676,7 +656,6 @@
             }
         }
 
-        // قراءة ملف Excel باستخدام SheetJS
         function readExcelFile(file) {
             const reader = new FileReader();
             
@@ -685,11 +664,9 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     
-                    // الحصول على اسم الورقة الأولى
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
-                    // تحويل الورقة إلى JSON
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
                     
                     if (jsonData.length === 0) {
@@ -697,10 +674,8 @@
                         return;
                     }
                     
-                    // استخراج البيانات
                     excelData = extractExcelData(jsonData);
                     
-                    // عرض عينة من البيانات
                     displaySampleData(excelData.slice(0, 5));
                     
                     showMessage(`تم قراءة ${excelData.length} سجل من ملف Excel`, 'success');
@@ -714,16 +689,13 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // قراءة ملف KMZ واستخراج المضللات
         async function readKMZFile(file) {
             try {
                 showLoading('جاري قراءة ملف KMZ...');
                 
-                // استخراج KML من KMZ
                 const zip = new JSZip();
                 const zipData = await zip.loadAsync(file);
                 
-                // البحث عن ملف KML داخل KMZ
                 let kmlFile = null;
                 for (const filename in zipData.files) {
                     if (filename.endsWith('.kml')) {
@@ -736,17 +708,13 @@
                     throw new Error('لم يتم العثور على ملف KML داخل ملف KMZ');
                 }
                 
-                // قراءة محتوى KML
                 const kmlText = await kmlFile.async('text');
                 
-                // تحليل KML
                 const parser = new DOMParser();
                 const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
                 
-                // تحويل KML إلى GeoJSON
                 const geojson = toGeoJSON.kml(kmlDoc);
                 
-                // استخراج المضللات من GeoJSON
                 polygonsData = extractPolygonsFromGeoJSON(geojson);
                 
                 hideLoading();
@@ -759,7 +727,6 @@
             }
         }
 
-        // استخراج المضللات من GeoJSON
         function extractPolygonsFromGeoJSON(geojson) {
             const polygons = [];
             
@@ -783,14 +750,12 @@
             return polygons;
         }
 
-        // استخراج البيانات من Excel
         function extractExcelData(jsonData) {
             if (!jsonData || jsonData.length === 0) return [];
             
             const firstRow = jsonData[0];
             const columns = Object.keys(firstRow);
             
-            // البحث عن أسماء الأعمدة المحتملة
             const counterCol = findColumn(columns, ['Counter_Number', 'Counter_No', 'Counter', 'رقم العداد', 'العداد']);
             const lonCol = findColumn(columns, ['Longitude', 'Lon', 'X', 'الطول', 'الإحداثي الطولي']);
             const latCol = findColumn(columns, ['Latitude', 'Lat', 'Y', 'العرض', 'الإحداثي العرضي']);
@@ -800,7 +765,6 @@
                 return [];
             }
             
-            // استخراج البيانات
             const extractedData = [];
             
             jsonData.forEach((row, index) => {
@@ -821,7 +785,6 @@
             return extractedData;
         }
 
-        // البحث عن عمود في المصفوفة
         function findColumn(columns, possibleNames) {
             const lowerColumns = columns.map(col => col.toString().toLowerCase());
             
@@ -835,7 +798,6 @@
             return null;
         }
 
-        // عرض عينة من البيانات
         function displaySampleData(sampleData) {
             const tbody = document.getElementById('results-body');
             tbody.innerHTML = '';
@@ -863,7 +825,6 @@
                 tbody.appendChild(row);
             });
             
-            // تحديث الإحصائيات
             updateStats({
                 total: sampleData.length,
                 linked: 0,
@@ -871,7 +832,6 @@
             });
         }
 
-        // مسح جدول النتائج
         function clearResultsTable() {
             const tbody = document.getElementById('results-body');
             tbody.innerHTML = `
@@ -887,13 +847,10 @@
             document.getElementById('download-btn').disabled = true;
         }
 
-        // تحميل البيانات النموذجية
         function loadSampleData() {
             showLoading('جاري تحميل البيانات النموذجية...');
             
-            // محاكاة تأخير الشبكة
             setTimeout(() => {
-                // بيانات نموذجية
                 const sampleExcelData = [
                     { counter: 84995769, longitude: 41.597424, latitude: 27.422577 },
                     { counter: 82384325, longitude: 42.935330, latitude: 28.256882 },
@@ -905,10 +862,8 @@
                     { counter: 10227804, longitude: 41.731682, latitude: 27.567220 }
                 ];
                 
-                // حفظ البيانات
                 excelData = sampleExcelData;
                 
-                // إنشاء مضللات نموذجية
                 polygonsData = [
                     {
                         name: "مضلع الرياض",
@@ -932,7 +887,6 @@
                     }
                 ];
                 
-                // عرض الملفات في القائمة
                 const fileList = document.getElementById('file-list');
                 fileList.innerHTML = `
                     <div class="file-item">
@@ -955,7 +909,6 @@
                     </div>
                 `;
                 
-                // عرض البيانات
                 displaySampleData(excelData);
                 
                 hideLoading();
@@ -964,7 +917,6 @@
             }, 1500);
         }
 
-        // معالجة البيانات
         function processData() {
             if (excelData.length === 0) {
                 showMessage('❌ لا توجد بيانات للمعالجة. يرجى رفع ملف Excel أولاً', 'error');
@@ -977,7 +929,6 @@
             
             showLoading('جاري معالجة البيانات...');
             
-            // محاكاة تقدم المعالجة
             let progress = 0;
             const progressInterval = setInterval(() => {
                 progress += 10;
@@ -986,7 +937,6 @@
                 if (progress >= 100) {
                     clearInterval(progressInterval);
                     
-                    // معالجة البيانات
                     setTimeout(() => {
                         processDataSimulation();
                         hideLoading();
@@ -996,13 +946,10 @@
             }, 200);
         }
 
-        // محاكاة معالجة البيانات
         function processDataSimulation() {
-            // معالجة البيانات
             processedData = excelData.map(item => {
                 let polygonName = "غير مرتبط";
                 
-                // التحقق مما إذا كانت النقطة داخل أي مضلع
                 for (const polygon of polygonsData) {
                     if (pointInPolygon(item.longitude, item.latitude, polygon.coordinates)) {
                         polygonName = polygon.name;
@@ -1010,9 +957,7 @@
                     }
                 }
                 
-                // إذا لم توجد مضللات، استخدم منطق الربط البسيط
                 if (polygonsData.length === 0) {
-                    // منطق افتراضي للربط بناءً على الموقع
                     if (item.longitude > 41 && item.longitude < 42 && item.latitude > 27 && item.latitude < 28) {
                         polygonName = "المنطقة الوسطى";
                     } else if (item.longitude > 42 && item.longitude < 43 && item.latitude > 28 && item.latitude < 29) {
@@ -1026,18 +971,14 @@
                 };
             });
             
-            // عرض النتائج
             displayResults(processedData);
             
-            // تمكين زر التحميل
             document.getElementById('download-btn').disabled = false;
             
             showMessage('✅ تمت معالجة البيانات بنجاح', 'success');
         }
 
-        // دالة للتحقق مما إذا كانت النقطة داخل المضلع
         function pointInPolygon(longitude, latitude, polygon) {
-            // خوارزمية Ray Casting
             let inside = false;
             
             for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -1053,7 +994,6 @@
             return inside;
         }
 
-        // عرض النتائج
         function displayResults(data) {
             const tbody = document.getElementById('results-body');
             tbody.innerHTML = '';
@@ -1073,7 +1013,6 @@
                 tbody.appendChild(row);
             });
             
-            // تحديث الإحصائيات
             const linkedCount = data.filter(item => item.polygon !== "غير مرتبط").length;
             updateStats({
                 total: data.length,
@@ -1082,14 +1021,12 @@
             });
         }
 
-        // تحديث الإحصائيات
         function updateStats({ total, linked, unlinked }) {
             document.getElementById('total-points').textContent = total;
             document.getElementById('linked-points').textContent = linked;
             document.getElementById('unlinked-points').textContent = unlinked;
         }
 
-        // تحميل النتائج كملف Excel
         function downloadResults() {
             if (processedData.length === 0) {
                 showMessage('❌ لا توجد نتائج للتحميل', 'error');
@@ -1099,7 +1036,6 @@
             showLoading('جاري إنشاء ملف Excel...');
             
             setTimeout(() => {
-                // إنشاء ورقة عمل
                 const worksheetData = [
                     ["رقم العداد", "الاحداثي الطولي", "الاحداثي العرضي", "اسم المضلع"]
                 ];
@@ -1117,13 +1053,11 @@
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "النتائج");
                 
-                // إنشاء الملف
                 const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
                 const blob = new Blob([excelBuffer], { 
                     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
                 });
                 
-                // تحميل الملف
                 const timestamp = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-');
                 saveAs(blob, `النتائج_المعالجة_${timestamp}.xlsx`);
                 
@@ -1133,7 +1067,6 @@
             }, 1500);
         }
 
-        // دوال مساعدة
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' بايت';
             if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' كيلوبايت';
@@ -1154,18 +1087,15 @@
             messageDiv.textContent = text;
             messageDiv.className = `message ${type}`;
             
-            // إخفاء الرسالة بعد 5 ثواني
             setTimeout(() => {
                 messageDiv.style.display = 'none';
             }, 5000);
         }
 
-        // تحميل البيانات النموذجية عند فتح الصفحة
         window.addEventListener('load', function() {
             loadSampleData();
         });
 
-        // دعم سحب وإفلات الملفات
         const uploadAreas = document.querySelectorAll('.upload-area');
         
         uploadAreas.forEach(area => {
