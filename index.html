@@ -454,7 +454,7 @@
                 <div class="upload-area" id="kmz-upload-area" onclick="document.getElementById('kmz-file').click()">
                     <i class="fas fa-map"></i>
                     <h3>ملف KMZ</h3>
-                    <p>يحتوي على المضللات الجغرافية</p>
+                    <p></p>
                     <button class="upload-btn">اختر ملف KMZ</button>
                     <input type="file" id="kmz-file" accept=".kmz" hidden>
                 </div>
@@ -531,7 +531,7 @@
                 <div class="step">
                     <div class="step-number">2</div>
                     <h3>تنسيق ملف KMZ</h3>
-                    <p>يجب أن يحتوي على مضللات جغرافية بأسماء واضحة</p>
+                    <p>يجب أن يحتوي على مضلعات جغرافية بأسماء واضحة</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
@@ -924,7 +924,7 @@
             }
             
             if (polygonsData.length === 0) {
-                showMessage('⚠️ لم يتم تحميل مضللات جغرافية، سيتم استخدام مضللات افتراضية', 'info');
+                showMessage('⚠️ لم يتم تحميل مضلعات جغرافية، سيتم استخدام مضلعات افتراضية', 'info');
             }
             
             showLoading('جاري معالجة البيانات...');
